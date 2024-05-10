@@ -152,10 +152,8 @@
     (if (>= (length decimal-parts) 2)
         (let ((fraction-part (cadr decimal-parts)))
           (if (>= (string-length fraction-part) 10)
-              (begin
-                (string-take fraction-part 10))
-              (begin
-                (string-append fraction-part (make-string (- 10 (string-length fraction-part)) #\0)))))
+                (string-take fraction-part 10)
+                (string-append fraction-part (make-string (- 10 (string-length fraction-part)) #\0))))
         "0000000000"))) ;; Return default value if decimal parts are not present
 
   ; Calculate the hash value  
