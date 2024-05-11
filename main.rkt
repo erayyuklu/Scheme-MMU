@@ -1,5 +1,5 @@
-; name surname
-; student id
+; eray yuklu
+; 2021400273
 ; compiling: yes
 ; complete: yes
 #lang racket
@@ -184,5 +184,99 @@
 (newline)
 (display (myhash "0110101" 12)) ; Output: 11
 (newline)
+
+
+
+
+
+
+
+(define (hashed_page args table_size page_table page_size)
+  ; Convert a list containing a single string element to just the string itself
+  (define (convert-to-string lst)
+    (if (and (list? lst) (= (length lst) 1) (string? (car lst)))
+        (car lst)
+        (error "Invalid input format")))
+  
+  ; Step 1: Calculate page number and offset
+  (define num-off (divide_address_space args page_size))
+  
+  ; Step 2: Compute hash index for the page number
+  (define num (car num-off))
+  (define index_num (myhash num table_size))
+  
+  ; Step 3: Find corresponding frame number based on hash index
+  (define (find-frame page-table)
+    (cond
+      ((null? page-table) #f)  ; Base case: If page-table is empty, return #f
+      ((string=? (caar page-table) num) (cdar page-table))  ; Return the frame number
+      (else (find-frame (cdr page-table)))))  ; Recursively search in the rest of the page table
+  
+  ; Step 4: Look up frame number in the page table
+  (define page-table-entry (find-frame (list-ref page_table index_num)))
+  
+  ; Step 5: If frame number found, concatenate with offset to get physical address
+  (if page-table-entry
+      (string-append (convert-to-string page-table-entry) (convert-to-string (cdr num-off)))
+      (error "No matching frame number found in the page table for the given page number.")))
+
+
 (newline)
+(display "************************3.7************************")  
+(newline)
+(display(hashed_page "010010111111101" 3 '( ( ("01" "000") ) ( ("11" "010") ) ( ("10" "111")) ) 8))
+(newline)
+(display (hashed_page "0101111101011001" 5 '( ( ("1101" "010") ) ( ("0111" "111") ("0101" "000")) ( ("1100" "101") ) ( ("1001" "100") ) ( ("0110" "110") ("0010" "001") ) ) 4))
+(newline)
+
+
+
+(define (split_addresses args size)
+  (define (split-helper str)
+    (if (<= (string-length str) size)
+        (list str)
+        (cons (substring str 0 size)
+              (split-helper (substring str size)))))
+  (split-helper args))
+
+
+  
+
+(newline)
+(display "************************3.8************************")  
+(newline)
+(display(split_addresses "1110110101000000100100101011000101110011" 8))
+(newline)
+(display (split_addresses "10101110101111010010101011111101" 16))
+(newline)
+(display(split_addresses "011110001101" 4))
+(newline)
+
+(define (map_adresses args table_size page_table page_size space_size)
+  ; Step 1: Split the logical addresses into chunks
+  (define list-of-addresses (split_addresses args space_size))
+  
+  ; Step 2: Map each logical address to its corresponding physical address using hashed page table
+  (define (map-helper lst return-lst)
+    (if (null? lst)
+        return-lst
+        (map-helper (cdr lst) 
+                    (append return-lst (list (hashed_page (car lst) table_size page_table page_size))))))
+  
+  ; Call the map-helper function with the list of addresses and an empty list as the initial return value
+  (map-helper list-of-addresses '()))
+
+
+
+
+
+(newline)
+(display "************************3.9************************")  
+(newline)
+
+(display (map_adresses "001010000011001011000010100000011001011101001010" 5 '( ( ("1101" "010") ) ( ("0111" "111") ("0101" "000") ) ( ("1100" "101") ) ( ("1001" "100") ) ( ("0110" "110") ("0010" "001") )) 4 16))
+(newline)
+(newline)
+
+
 
