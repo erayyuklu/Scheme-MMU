@@ -116,9 +116,15 @@
       (* x (power x (- n 1)))))
 
 (define (sin-terms x n)
-  (if (= n 0)
-      x
-      (+(* (/ (power -1 n) (factorial (+ (* 2 n) 1) )) (power x (+ (* 2 n) 1))) (sin-terms x (- n 1)))))
+  (define (sin-term k)
+    (* (/ (power -1 k) (factorial (+ (* 2 k) 1))) (power x (+ (* 2 k) 1))))
+  
+  (define (sum-terms k)
+    (if (= k (- n 1))
+        (sin-term k)
+        (+ (sin-term k) (sum-terms (+ k 1)))))
+  
+  (sum-terms 0))
 
 (define (find_sin angle num-terms)
   (sin-terms (degrees->radians angle) num-terms))
@@ -143,7 +149,7 @@
   (define sin-value
     (let* ((decimal-value (binary_to_decimal arg))
            (num-modulus (modulo decimal-value 5)))
-      (find_sin decimal-value num-modulus)))
+      (find_sin decimal-value (+ num-modulus 1))))
 
   ; Extract the first ten digits after the decimal point
  (define (extract-decimal-digits value)
